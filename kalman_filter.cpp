@@ -35,7 +35,7 @@ void KalmanFilter::Update(const VectorXd &z) {
     MatrixXd K = P_ * H_.transpose() * (H_ * P_ * H_.transpose() + R_).inverse();
 
     // Measurement Update: update estimate with measurement:
-    x_ = x_ + K * (z - (H_ * x_));
+    x_ = x_ + K * (z - (H_ * x_)); 
 
     // Determine Identity matrix required size
     long x_size = x_.size();
