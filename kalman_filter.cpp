@@ -1,5 +1,6 @@
 #include "kalman_filter.h"
 #include <iostream>
+#define PI 3.14159265
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -51,8 +52,6 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     Tools tools;
     MatrixXd Hj_ = tools.CalculateJacobian(x_);
 
-    VectorXd hx_(3);
-
     float px = x_[0];
     float py = x_[1];
     float vx = x_[2];
@@ -61,14 +60,26 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     float phi = atan2f(py, px);
     float rho_dot = (px*vx + py*vy)/rho;
 
+    VectorXd hx_(3);
+    VectorXd y_(3);
+
     hx_ << rho, phi, rho_dot;
-    cout << "hx: " << hx_ << endl;
 
     // Measurement Update: Extended Kalman Gain equation:
     MatrixXd K = P_ * Hj_.transpose() * (Hj_ * P_ * Hj_.transpose() + R_).inverse();
 
     // Measurement Update: update estimate with measurement:
-    x_ = x_ + K * (z - hx_);
+    y_ = z - hx_;
+    
+    // Check if difference between angles is greater than PI, or lesser than -PI
+    if (y_[1]>PI){
+        y_[1]=y_[1]-PI;
+    } 
+    if (y_[1]<-PI){
+        y_[1]=y_[1]+PI;
+    } 
+    x_ = x_ + K * y_;
+
 
     // Determine Identity matrix required size
     long x_size = x_.size();
