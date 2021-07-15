@@ -6,6 +6,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::cout;
 using std::endl;
+using std::max;
 
 KalmanFilter::KalmanFilter() {}
 
@@ -58,7 +59,8 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     float vy = x_[3];
     float rho = sqrt(px*px + py*py);
     float phi = atan2f(py, px);
-    float rho_dot = (px*vx + py*vy)/rho;
+    float eps = 0.0001;
+    float rho_dot = (px*vx + py*vy) / std::max(rho,eps);
 
     VectorXd hx_(3);
     VectorXd y_(3);
@@ -72,11 +74,11 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
     y_ = z - hx_;
     
     // Check if difference between angles is greater than PI, or lesser than -PI
-    if (y_[1]>PI){
-        y_[1]=y_[1]-PI;
+    if (y_[1] > PI){
+        y_[1] = y_[1] - 2*PI;
     } 
-    if (y_[1]<-PI){
-        y_[1]=y_[1]+PI;
+    if (y_[1] < -PI){
+        y_[1] = y_[1] + 2*PI;
     } 
     x_ = x_ + K * y_;
 
